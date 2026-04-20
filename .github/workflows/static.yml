@@ -1,4 +1,4 @@
-name: 部署 Vue 到 GitHub Pages
+name: Deploy Vue to Pages
 
 on:
   push:
@@ -6,26 +6,29 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: 拉取代码
-        uses: actions/checkout@v4
-
-      - name: 安装 Node.js
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
-
-      - name: 安装依赖
+      - name: Install dependencies
         run: npm install
-
-      - name: 打包项目
+      - name: Build
         run: npm run build
-
-      - name: 部署到 GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
+          path: ./dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    name: Deploy
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
